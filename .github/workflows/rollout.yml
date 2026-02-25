@@ -1,0 +1,61 @@
+name: Rollout Queue
+
+on:
+  schedule:
+    - cron: '0 3,15 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: rollout-main
+  cancel-in-progress: false
+
+jobs:
+  push-next-commit:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Configure git identity
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      - name: Find next queued commit
+        id: queue
+        run: |
+          git fetch origin main staged-rollout
+
+          NEXT_COMMIT=$(git rev-list --reverse origin/main..origin/staged-rollout | head -n 1)
+          if [ -z "${NEXT_COMMIT:-}" ]; then
+            echo "has_commit=false" >> "$GITHUB_OUTPUT"
+            echo "No commits left in rollout queue."
+            exit 0
+          fi
+
+          echo "has_commit=true" >> "$GITHUB_OUTPUT"
+          echo "next_commit=$NEXT_COMMIT" >> "$GITHUB_OUTPUT"
+          echo "Next commit: $NEXT_COMMIT"
+
+      - name: Cherry-pick next commit onto main
+        if: steps.queue.outputs.has_commit == 'true'
+        run: |
+          git checkout main
+          git cherry-pick "${{ steps.queue.outputs.next_commit }}"
+
+      - name: Push updated main
+        if: steps.queue.outputs.has_commit == 'true'
+        run: git push origin main
+
+      - name: Report remaining queue
+        if: steps.queue.outputs.has_commit == 'true'
+        run: |
+          git fetch origin main staged-rollout
+          REMAINING=$(git rev-list --count origin/main..origin/staged-rollout)
+          echo "Remaining queued commits: $REMAINING"
