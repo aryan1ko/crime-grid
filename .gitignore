@@ -1,0 +1,12 @@
+.env
+venv/
+__pycache__/
+*.pyc
+data/
+*.parquet
+*.duckdb
+*.geojson
+*.csv
+.ipynb_checkpoints/
+.DS_Store
+.vscode/
