@@ -1,0 +1,32 @@
+# Core data
+pandas==2.1.4
+pyarrow==18.1.0
+geopandas==0.14.2
+shapely==2.0.2
+pyproj==3.6.1
+fiona==1.9.5
+
+# Database
+duckdb==0.9.2
+
+# API / fetching
+requests==2.31.0
+sodapy==2.2.0
+census==0.8.19
+us==3.1.1
+
+# Geospatial
+folium==0.15.1
+keplergl==0.3.2
+h3==3.7.6
+
+# Utilities
+python-dotenv==1.0.0
+tqdm==4.66.1
+loguru==0.7.2
+pydantic==2.5.3
+
+# Notebook
+jupyter==1.0.0
+matplotlib==3.8.2
+seaborn==0.13.0
