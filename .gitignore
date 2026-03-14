@@ -10,3 +10,6 @@ data/
 .ipynb_checkpoints/
 .DS_Store
 .vscode/
+
+INTERVIEW_TALK_TRACK.txt
+docs/palantir_framing.md
