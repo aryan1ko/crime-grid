@@ -1,12 +1,15 @@
 # Austin Crime Ontology
 
-A local analytics pipeline that models Austin PD incidents as linked objects in DuckDB, then produces trend tables and maps.
+A local analytics pipeline that converts Austin PD crime records into an ontology-style data model in DuckDB, then generates trend outputs and maps.
 
-## What it does
-- Ingests Austin crime reports (2018-2024 window configured; latest run returned 2019-2024 records)
-- Builds ontology-style objects: `Incident`, `Location`, `OffenseType`, `District`, `CensusTract`, `Demographics`
-- Creates link tables for cross-object analysis
-- Generates CSV outputs and HTML maps in `data/outputs/`
+## Overview
+This project turns flat public-safety records into a connected object model so analysis can follow relationships across entities instead of scanning one denormalized table.
+
+## Ontology Design Summary
+- Core objects: `Incident`, `Location`, `OffenseType`, `District`, `CensusTract`, `Demographics`
+- Core links: incident-to-location, incident-to-offense, location-to-district, location-to-tract, and tract-to-demographics
+- Modeling goal: preserve source traceability while enabling cross-domain questions (crime patterns by place, offense mix by district, and demographic context by tract)
+- Pipeline scope: ingest data, build objects/links, run analytics, and export CSV + HTML outputs to `data/outputs/`
 
 ## Latest Run Results (March 14, 2026)
 Run command:
