@@ -1,7 +1,7 @@
 # Ontology Design Document
 ## Austin Crime Intelligence — Object Model
 
-**Author:** [Your Name]  
+**Author:** Aryan Kondapally  
 **Dataset:** Austin PD Crime Reports + ACS Demographics  
 **Purpose:** Palantir Foundry-style ontology demonstrating cross-source entity modeling
 
