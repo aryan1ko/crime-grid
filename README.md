@@ -5,6 +5,10 @@ A local analytics pipeline that converts Austin PD crime records into an ontolog
 ## Overview
 This project turns flat public-safety records into a connected object model so analysis can follow relationships across entities instead of scanning one denormalized table.
 
+| Correlation Plot | Density Map | Hotspot Map |
+|---|---|---|
+| ![Correlation Plot](docs/imgs_README/correlation_plot.png) | ![Density Map](docs/imgs_README/map_density.png) | ![Hotspot Map](docs/imgs_README/map_hotspot.png) |
+
 ## Ontology Design Summary
 - Core objects: `Incident`, `Location`, `OffenseType`, `District`, `CensusTract`, `Demographics`
 - Core links: incident-to-location, incident-to-offense, location-to-district, location-to-tract, and tract-to-demographics
