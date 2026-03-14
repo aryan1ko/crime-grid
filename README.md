@@ -1,137 +1,49 @@
 # Austin Crime Ontology
 
-A geospatial crime intelligence project built on Austin's public crime report data, modeled using Palantir Foundry-style ontology principles.
+A local analytics pipeline that models Austin PD incidents as linked objects in DuckDB, then produces trend tables and maps.
 
-## What This Project Does
+## What it does
+- Ingests Austin crime reports (2018-2024 window configured; latest run returned 2019-2024 records)
+- Builds ontology-style objects: `Incident`, `Location`, `OffenseType`, `District`, `CensusTract`, `Demographics`
+- Creates link tables for cross-object analysis
+- Generates CSV outputs and HTML maps in `data/outputs/`
 
-This project ingests Austin PD crime reports (2003–present) from the City of Austin Open Data Portal, enriches them with Census demographic data, and builds a unified **object model** (ontology) that lets you answer cross-dataset questions that neither source can answer alone.
-
-It is structured to mirror how Palantir Foundry works: explicit object types, link types, properties with provenance, and an analytical layer on top.
-
----
-
-## Object Model (Ontology)
-
-```
-Incident ──── occurred_at ────► Location
-    │                               │
-    └── classified_as ──► OffenseType    └── within ──► CensusTract
-    │                                                        │
-    └── responded_by ──► District              enriched_by ──► Demographics
-```
-
-### Object Types
-| Type | Description |
-|---|---|
-| `Incident` | A single reported crime event |
-| `Location` | A normalized address / coordinate pair |
-| `OffenseType` | UCR/NIBRS offense classification |
-| `District` | APD patrol district |
-| `CensusTract` | Census geographic unit |
-| `Demographics` | ACS demographic snapshot per tract |
-
-### Link Types
-| Link | From | To |
-|---|---|---|
-| `occurred_at` | Incident | Location |
-| `classified_as` | Incident | OffenseType |
-| `within` | Location | CensusTract |
-| `enriched_by` | CensusTract | Demographics |
-| `patrolled_by` | Location | District |
-
----
-
-## Stack
-
-- **Python 3.10+** — ingestion, transformation, entity resolution
-- **DuckDB** — local analytical database (no server needed)
-- **PostGIS / SQLite + Spatialite** — geospatial joins (census tract assignment)
-- **Pandas / GeoPandas** — data wrangling
-- **Folium / Kepler.gl** — visualization
-- **Census API** — demographic enrichment
-
----
-
-## Setup
-
+## Latest Run Results (March 14, 2026)
+Run command:
 ```bash
-# 1. Clone the repo
-git clone https://github.com/YOUR_USERNAME/austin-crime-ontology
-cd austin-crime-ontology
+python run_pipeline.py --skip-census
+```
 
-# 2. Create virtual environment
-python -m venv venv
-source venv/bin/activate  # Windows: venv\Scripts\activate
+Observed outputs from this run:
+- 500,000 incidents ingested (`2019-2024`)
+- Yearly volume: 2019 `48,202`; 2020 `98,864`; 2021 `91,617`; 2022 `88,095`; 2023 `86,954`; 2024 `86,268`
+- Violent incidents: `65,354` (13.1%); property incidents: `198,648` (39.7%)
+- Pre/post-COVID shifts (2019 -> 2021):
+  - UCR `23G`: `+460.5%` (483 -> 2,707)
+  - UCR `240`: `+200.3%` (1,464 -> 4,397)
+  - UCR `23F`: `+73.7%` (5,493 -> 9,541)
+- Outputs generated: `q3_hotspots.csv`, `q5_yoy_trend.csv`, `q6_covid_comparison.csv`, `map_hotspots.html`, `map_covid_trend.html`
 
-# 3. Install dependencies
+## Implications from this run
+- Trend analysis is working: offense composition and year-over-year deltas are usable.
+- Spatial and tract-level conclusions are not reliable yet in this run:
+  - `link_location_tract` produced `0` links.
+  - Location dedup collapsed to a single canonical location (all 500,000 incidents at one hotspot), which indicates geospatial input quality issues.
+- Priority fix before policy conclusions: restore reliable point coordinates and tract linkage, then rerun the pipeline.
+
+## Quickstart
+```bash
+python -m venv .venv
+source .venv/bin/activate
 pip install -r requirements.txt
-
-# 4. Set up environment variables
 cp .env.example .env
-# Add your Census API key (free at api.census.gov/data/key_signup.html)
-
-# 5. Run full pipeline
 python run_pipeline.py
 ```
 
----
-
-## Pipeline Stages
-
-```
-1. ingestion/fetch_crime.py        → Download crime reports from Socrata API
-2. ingestion/fetch_census.py       → Download ACS demographics per tract
-3. ingestion/fetch_boundaries.py   → Download APD districts + census tract shapefiles
-4. ontology/build_objects.py       → Build normalized object tables
-5. ontology/entity_resolution.py   → Deduplicate locations, resolve addresses
-6. ontology/link_builder.py        → Build all link type tables
-7. analysis/queries.py             → Run cross-object analytical queries
-8. viz/map_builder.py              → Generate interactive maps
-```
-
----
-
-## Analytical Questions This Ontology Can Answer
-
-1. Which census tracts have the highest incident density relative to population?
-2. How does offense mix vary by APD district over time?
-3. Which locations are repeat incident sites (hot spots)?
-4. Is there a correlation between median income (ACS) and violent crime rate by tract?
-5. How did crime patterns shift pre/post COVID (2019 vs 2021)?
-
-These questions span at least 3 object types each — that's the point of the ontology.
-
----
-
-## Data Sources
-
-| Source | URL | License |
-|---|---|---|
-| Austin Crime Reports | https://data.austintexas.gov/Public-Safety/Crime-Reports/fdj4-gpfu | Public Domain |
-| ACS 5-Year Estimates | https://api.census.gov | Public Domain |
-| APD District Boundaries | https://data.austintexas.gov | Public Domain |
-| Census Tract Shapefiles | https://www.census.gov/geographies/mapping-files.html | Public Domain |
-
----
-
-## Ontology Design Decisions
-
-See docs/ONTOLOGY_DESIGN.md for the full design document explaining modeling choices, tradeoffs, and known limitations.
-
----
-
-## Project Structure
-
-```
-austin-crime-ontology/
-├── ingestion/          # Data fetching scripts (one per source)
-├── ontology/           # Object building, entity resolution, link building
-├── analysis/           # Analytical queries and outputs
-├── viz/                # Map and chart generation
-├── sql/                # DuckDB schema definitions
-├── notebooks/          # Exploratory analysis
-├── docs/               # Design documents
-├── run_pipeline.py     # Single entry point to run everything
-├── config.py           # Shared configuration
-└── requirements.txt
-```
+## Project Layout
+- `ingestion/` data fetchers
+- `ontology/` object + link builders
+- `analysis/` analytical queries
+- `viz/` map generation
+- `sql/` schema definitions
+- `run_pipeline.py` single entry point
