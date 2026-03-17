@@ -1,4 +1,5 @@
 # Austin Crime Ontology
+[in progress]
 
 A local analytics pipeline that converts Austin PD crime records into an ontology-style data model in DuckDB, then generates trend outputs and maps.
 
