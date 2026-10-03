@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>RELAY — vehicle handoff tracker</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <div id="app">
+      <header id="topbar">
+        <div class="brand">
+          <span class="dot"></span> RELAY
+          <span class="tagline">vehicle handoff tracker</span>
+        </div>
+        <div class="topbar-right">
+          <div id="source-toggle" class="source-toggle"></div>
+          <div id="status" class="status">connecting…</div>
+        </div>
+      </header>
+
+      <main id="main">
+        <section id="map-wrap">
+          <div id="map"></div>
+          <div id="map-hint" class="hint">
+            Click a camera marker to open its feed →
+          </div>
+        </section>
+
+        <section id="side">
+          <div id="feed-panel" class="panel">
+            <div class="panel-head">
+              <span id="feed-title">NO FEED</span>
+              <span id="feed-meta" class="meta"></span>
+            </div>
+            <div id="feed-stage" class="feed-stage">
+              <video id="feed-video" muted loop playsinline></video>
+              <img id="feed-img" alt="camera feed" />
+              <div id="boxes"></div>
+              <div id="feed-empty" class="feed-empty">Select a camera on the map.</div>
+            </div>
+            <div id="feed-foot" class="feed-foot">
+              <span id="track-hint">Click a vehicle box to start tracking it.</span>
+              <button id="mode-btn" class="btn-ghost hidden">⏸ INSPECT</button>
+            </div>
+          </div>
+
+          <div id="target-panel" class="panel hidden">
+            <div class="panel-head">
+              <span>TRACKING TARGET</span>
+              <button id="clear-btn" class="btn-ghost">clear</button>
+            </div>
+            <div id="target-body"></div>
+          </div>
+
+          <div id="path-panel" class="panel hidden">
+            <div class="panel-head">
+              <span>CAR'S PATH</span>
+              <span id="path-meta" class="meta"></span>
+            </div>
+            <div id="path-body"></div>
+          </div>
+
+          <div id="events-panel" class="panel">
+            <div class="panel-head"><span>EVENT LOG</span></div>
+            <div id="events"></div>
+          </div>
+        </section>
+      </main>
+    </div>
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>

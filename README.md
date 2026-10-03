@@ -1,3 +1,71 @@
+# Crime Grid
+
+Austin public-safety data tooling. Two related projects live in this repo:
+
+- **[RELAY](relay/)** — a live camera-to-camera **vehicle handoff tracker** (featured below).
+- **[Austin Crime Ontology](#austin-crime-ontology)** — a crime-records analytics pipeline (further down).
+
+---
+
+## 🚗 RELAY — vehicle handoff tracker
+
+![RELAY tracking a vehicle across Austin traffic cameras, with the car's path plotted on the map](docs/relay-hero.png)
+
+**Open a live traffic camera, click a vehicle, and RELAY follows it down the road — re-identifying the same vehicle at the next camera and plotting its path across the network.**
+
+It runs on real, public, geolocated cameras (City of Austin traffic cameras and
+London TfL JamCams — switch cities from the top bar, no API key needed). A Python
+computer-vision backend does the detection and re-identification; a browser
+map UI shows the cameras, the live feeds, and the handoff.
+
+### What it does
+
+1. **Map of live cameras.** Click any camera to open its feed. The backend
+   fetches the feed, runs **YOLO** vehicle detection, and overlays clickable
+   boxes on the frame (with a looping "LIVE" view for video sources).
+2. **Pick a target.** Click a vehicle. RELAY captures its **appearance
+   embedding** (a re-ID feature vector) and colour signature.
+3. **Arm the road ahead.** It computes the plausible **next cameras down the
+   road** — nearest cameras in range, preferring those aligned with the source
+   camera's facing direction — and starts scanning each one, with an
+   arrival-time window derived from distance.
+4. **Trigger on re-identification.** When a vehicle at an armed camera matches
+   the target (cosine similarity over threshold) **within its arrival window**,
+   RELAY fires a `MATCH`.
+5. **Plot the path + keep following.** Each confirmed sighting is added to the
+   car's **path** (numbered waypoints + line on the map, plus a journey timeline
+   with per-hop time, distance, and similarity). RELAY then re-anchors to the
+   matched vehicle and arms the *new* camera's downstream set, following it hop
+   by hop across the camera network.
+
+### Under the hood
+
+- **Backend** (`relay/backend`): FastAPI + a single CV worker thread —
+  Ultralytics **YOLO** detection, a **ResNet-50 appearance embedding** for
+  cross-camera re-ID (pluggable with `torchreid`/OSNet), great-circle
+  topology for "next camera down the road", and a WebSocket event stream.
+- **Frontend** (`relay/frontend`): Vite + Leaflet — camera map, live feeds with
+  detection boxes, the target/path/event panels, and a London/Austin toggle.
+
+### Run it
+
+```bash
+cd relay
+scripts/setup.sh      # Python venv + deps (incl. torch) + frontend deps
+scripts/dev.sh        # backend :8000 + frontend :5173  → open http://localhost:5173
+```
+
+Full details, configuration, and the honest limitations (public feeds refresh
+slowly, so live multi-hop depends on a vehicle actually passing an armed camera
+during a refresh) are in **[`relay/README.md`](relay/README.md)**.
+
+> **Note:** RELAY is a demonstration of multi-camera vehicle **re-identification**
+> as a computer-vision problem, using only public, officially-published camera
+> feeds under their terms. These are low-resolution traffic cameras not designed
+> to identify individuals; don't use it to surveil or track people.
+
+---
+
 # Austin Crime Ontology
 [in progress]
 
@@ -55,3 +123,4 @@ python run_pipeline.py
 - `viz/` map generation
 - `sql/` schema definitions
 - `run_pipeline.py` single entry point
+- `relay/` the RELAY vehicle handoff tracker (see above)

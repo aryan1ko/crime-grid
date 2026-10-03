@@ -1,0 +1,17 @@
+# Python
+backend/.venv/
+__pycache__/
+*.pyc
+
+# Model weights (auto-downloaded on first run)
+*.pt
+backend/yolov8n.pt
+
+# Node / Vite
+frontend/node_modules/
+frontend/dist/
+
+# Misc
+.DS_Store
+*.log
+.env
