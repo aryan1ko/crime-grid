@@ -1,0 +1,9 @@
+# Computer-vision stack. Heavier (torch + model downloads on first run).
+# Without these the app still runs, but vehicle detection / re-ID are disabled.
+ultralytics>=8.3        # YOLO detection + built-in ByteTrack tracking
+opencv-python-headless>=4.9
+lap>=0.4                # association solver used by ByteTrack
+# torch / torchvision are pulled in by ultralytics.
+
+# Optional, stronger cross-camera re-ID (set RELAY_REID_BACKEND=torchreid):
+#   pip install torchreid
